@@ -13,6 +13,10 @@
 // limitations under the License.
 package tracker
 
+import (
+	"fmt"
+)
+
 var DefaultURL = "https://www.pivotaltracker.com"
 
 type Client struct {
@@ -41,4 +45,21 @@ func (c Client) InProject(projectId int) ProjectClient {
 		id:   projectId,
 		conn: c.conn,
 	}
+}
+
+func (c Client) Story(storyID int) (Story, error) {
+	url := fmt.Sprintf("/stories/%d", storyID)
+	request, err := c.conn.CreateRequest("GET", url, nil)
+	if err != nil {
+		return Story{}, err
+	}
+
+	var story Story
+	_, err = c.conn.Do(request, &story)
+
+	if err != nil {
+		return Story{}, err
+	}
+
+	return story, err
 }

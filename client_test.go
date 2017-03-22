@@ -118,6 +118,27 @@ var _ = Describe("Tracker Client", func() {
 		})
 	})
 
+
+	Describe("retrieving a story by ID", func(){
+		It("gets one story", func(){
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/services/v5/stories/560"),
+					verifyTrackerToken(),
+
+					ghttp.RespondWith(http.StatusOK, Fixture("story.json")),
+				),
+			)
+
+			client := tracker.NewClient("api-token")
+
+			story, err := client.Story(560)
+			Ω(err).ToNot(HaveOccurred())
+			Ω(story.ID).To(Equal(560))
+			Ω(story.Name).To(Equal("Tractor beam loses power intermittently"))
+		})
+	})
+
 	Describe("listing stories", func() {
 		It("gets all the stories by default", func() {
 			server.AppendHandlers(
