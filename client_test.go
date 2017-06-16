@@ -466,6 +466,40 @@ var _ = Describe("Tracker Client", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 	})
+
+	Describe("creating a blocker", func() {
+		It("POSTs", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/services/v5/projects/99/stories/560/blockers"),
+					ghttp.VerifyJSON(`{"description":"some-tracker-blocker"}`),
+					verifyTrackerToken(),
+
+					ghttp.RespondWith(http.StatusOK, `{
+			          "kind": "blocker",
+                      "id": 111,
+                      "story_id": 560,
+                      "description": "some-tracker-blocker",
+                      "person_id": 101,
+                      "created_at": "2017-03-07T12:00:00Z",
+                      "updated_at": "2017-03-07T12:00:00Z"
+					}`),
+				),
+			)
+
+			client := tracker.NewClient("api-token")
+
+			blocker, err := client.InProject(99).CreateBlocker(560, tracker.Blocker{
+				Description: "some-tracker-blocker",
+			})
+
+			Expect(blocker).Should(Equal(tracker.Blocker{
+				ID: 111,
+				Description: "some-tracker-blocker",
+			}))
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+	})
 })
 
 func verifyTrackerToken() http.HandlerFunc {
