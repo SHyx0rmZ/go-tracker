@@ -399,6 +399,55 @@ var _ = Describe("Tracker Client", func() {
 		})
 	})
 
+	Describe("updating a story", func() {
+		It("PUTs", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/services/v5/projects/99/stories/1234"),
+					ghttp.VerifyJSON(`{"name":"The death star is approaching", "id": 1234 }`),
+					verifyTrackerToken(),
+
+					ghttp.RespondWith(http.StatusOK, `{
+						"id": 1234,
+						"project_id": 5678,
+						"name": "The death star is approaching"
+					}`),
+				),
+			)
+
+			client := tracker.NewClient("api-token")
+
+			story, err := client.InProject(99).UpdateStory(tracker.Story{
+				Name: "The death star is approaching",
+				ID:   1234,
+			})
+			Ω(err).NotTo(HaveOccurred())
+
+			Ω(story).To(Equal(tracker.Story{
+				ID:        1234,
+				ProjectID: 5678,
+				Name:      "The death star is approaching",
+			}))
+		})
+		Context("when the PUT is not successful", func() {
+			It("returns error saying request failed", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/services/v5/projects/99/stories/1234"),
+						verifyTrackerToken(),
+						ghttp.RespondWith(http.StatusInternalServerError, ""),
+					),
+				)
+
+				_, err := client.InProject(99).UpdateStory(tracker.Story{
+					Name: "The death star is approaching",
+					ID:   1234,
+				})
+				Ω(err).To(MatchError("request failed (500)"))
+			})
+		})
+	})
+
 	Describe("deleting a story", func() {
 		It("DELETES", func() {
 			server.AppendHandlers(

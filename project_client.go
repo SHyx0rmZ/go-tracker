@@ -120,6 +120,23 @@ func (p ProjectClient) CreateStory(story Story) (Story, error) {
 	return createdStory, err
 }
 
+func (p ProjectClient) UpdateStory(story Story) (Story, error) {
+	url := fmt.Sprintf("/stories/%d", story.ID)
+	request, err := p.createRequest("PUT", url, nil)
+	if err != nil {
+		return Story{}, err
+	}
+
+	buffer := &bytes.Buffer{}
+	json.NewEncoder(buffer).Encode(story)
+
+	p.addJSONBodyReader(request, buffer)
+
+	var updatedStory Story
+	_, err = p.conn.Do(request, &updatedStory)
+	return updatedStory, err
+}
+
 func (p ProjectClient) DeleteStory(storyId int) error {
 	url := fmt.Sprintf("/stories/%d", storyId)
 	request, err := p.createRequest("DELETE", url, nil)
