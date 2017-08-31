@@ -45,6 +45,7 @@ type Story struct {
 	CreatedAt  *time.Time `json:"created_at,omitempty"`
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
 	AcceptedAt *time.Time `json:"accepted_at,omitempty"`
+	Blockers   []Blocker  `json:"blockers,omitempty"`
 }
 
 type Task struct {

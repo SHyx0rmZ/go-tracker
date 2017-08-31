@@ -18,6 +18,11 @@
        [
          { "id": 10, "project_id": 99, "name": "some-label" },
          { "id": 11, "project_id": 99, "name": "some-other-label" }
+       ],
+       "blockers":
+       [
+           {"id": 12, "description": "some blocker"},
+           {"id": 13, "description": "some other blocker"}
        ]
    },
    {
@@ -45,6 +50,15 @@
                "created_at": "2015-07-20T22:50:50Z",
                "updated_at": "2015-07-20T22:50:50Z"
            }
+       ],
+       "blockers":
+       [
+           {
+               "id": 12,
+               "description": "some blocker",
+               "created_at": "2015-07-20T22:50:50Z",
+               "person_id": 789998
+           }
        ]
    },
    {
@@ -65,6 +79,9 @@
        ],
        "labels":
        [
+       ],
+       "blockers":
+       [
        ]
    },
    {
@@ -84,6 +101,9 @@
        [
        ],
        "labels":
+       [
+       ],
+       "blockers":
        [
        ]
    }

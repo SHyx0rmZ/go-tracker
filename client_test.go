@@ -370,14 +370,18 @@ var _ = Describe("Tracker Client", func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/services/v5/projects/99/stories"),
-					ghttp.VerifyJSON(`{"name":"Exhaust ports are ray shielded"}`),
+					ghttp.VerifyJSON(`{"name":"Exhaust ports are ray shielded","blockers":[{"id":5,"description":"something"}]}`),
 					verifyTrackerToken(),
 
 					ghttp.RespondWith(http.StatusOK, `{
 						"id": 1234,
 						"project_id": 5678,
 						"name": "Exhaust ports are ray shielded",
-						"url": "https://some-url.biz/1234"
+						"url": "https://some-url.biz/1234",
+						"blockers":
+						[
+						 {"id": 5, "description": "something"}
+						]
 					}`),
 				),
 			)
@@ -386,6 +390,12 @@ var _ = Describe("Tracker Client", func() {
 
 			story, err := client.InProject(99).CreateStory(tracker.Story{
 				Name: "Exhaust ports are ray shielded",
+				Blockers: []tracker.Blocker{
+					{
+						ID:          5,
+						Description: "something",
+					},
+				},
 			})
 			Ω(story).Should(Equal(tracker.Story{
 				ID:        1234,
@@ -394,6 +404,12 @@ var _ = Describe("Tracker Client", func() {
 				Name: "Exhaust ports are ray shielded",
 
 				URL: "https://some-url.biz/1234",
+				Blockers: []tracker.Blocker{
+					{
+						ID:          5,
+						Description: "something",
+					},
+				},
 			}))
 			Ω(err).ShouldNot(HaveOccurred())
 		})
@@ -494,7 +510,7 @@ var _ = Describe("Tracker Client", func() {
 			})
 
 			Expect(blocker).Should(Equal(tracker.Blocker{
-				ID: 111,
+				ID:          111,
 				Description: "some-tracker-blocker",
 			}))
 			Expect(err).ShouldNot(HaveOccurred())
