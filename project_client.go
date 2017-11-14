@@ -9,11 +9,86 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
+)
+
+type IterationScope string
+
+const (
+	IterationScopeDone IterationScope = "done"
+	IterationScopeCurrent IterationScope = "current"
+	IterationScopeBacklog IterationScope = "backlog"
+	IterationScopeCurrentBacklog IterationScope = "current_backlog"
+	IterationScopeDoneCurrent IterationScope = "done_current"
 )
 
 type ProjectClient struct {
 	id   int
 	conn connection
+}
+
+type Iteration struct {
+	Number int `json:"number"`
+	ProjectID int `json:"project_id"`
+	Length int `json:"length"`
+	TeamStrength float32 `json:"team_strength"`
+	Stories []Story `json:"stories"`
+	Start time.Time `json:"start"`
+	Finish time.Time `json:"finish"`
+	Velocity float32 `json:"velocity"`
+	Points int `json:"points"`
+	AcceptedPoints int `json:"accepted_points"`
+	EffectivePoints float32 `json:"effective_points"`
+	Accepted *json.RawMessage `json:"accepted"`
+	Created *json.RawMessage `json:"created"`
+	Analytics *json.RawMessage `json:"analytics"`
+	Kind string `json:"kind"`
+}
+
+type IterationsQuery struct {
+	Scope IterationScope
+	Label  string
+
+	Limit  int
+	Offset int
+}
+
+func (query IterationsQuery) Query() url.Values {
+	params := url.Values{}
+
+	if query.Scope != "" {
+		params.Set("scope", string(query.Scope))
+	}
+
+	if query.Label != "" {
+		params.Set("label", query.Label)
+	}
+
+	if query.Limit != 0 {
+		params.Set("limit", fmt.Sprintf("%d", query.Limit))
+	}
+
+	if query.Offset != 0 {
+		params.Set("offset", fmt.Sprintf("%d", query.Offset))
+	}
+
+	return params
+}
+
+
+func (p ProjectClient) Iterations(query IterationsQuery) ([]Iteration, Pagination, error) {
+	request, err := p.createRequest("GET", "/iterations", query.Query())
+	if err != nil {
+		return nil, Pagination{}, err
+	}
+
+	var iterations []Iteration
+	pagination, err := p.conn.Do(request, &iterations)
+	if err != nil {
+		return nil, Pagination{}, err
+	}
+
+	return iterations, pagination, err
 }
 
 func (p ProjectClient) Stories(query StoriesQuery) ([]Story, Pagination, error) {
